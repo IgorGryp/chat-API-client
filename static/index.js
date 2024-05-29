@@ -74,7 +74,12 @@ async function displayMessages(channelId) {
 
     messages.forEach((message) => {
       const messageElement = document.createElement('p');
-      messageElement.textContent = `[${message.createdAtTime}] ${message.createdBy}: ${message.message}`;
+
+      messageElement.textContent =
+        `[${message.createdAtTime}] ${message.createdBy}:` +
+        (message.to ? ` (to ${message.to})` : '') +
+        `: ${message.message}`;
+
       chatArea.appendChild(messageElement);
     });
   } catch (error) {
@@ -153,7 +158,7 @@ function sendMessage() {
 
 /* ------------------------------------------- */
 // Send a private message
-function sendPrivateMessage() {
+/* function sendPrivateMessage() {
   const message = privateMessageInput.value;
   const recipient = privateMessageRecipient.value;
 
@@ -161,7 +166,19 @@ function sendPrivateMessage() {
   addChatMessage(`You (to ${recipient}): ${message}`);
   privateMessageRecipient.value = '';
   privateMessageInput.value = '';
+} */
+
+function sendPrivateMessage() {
+  const message = privateMessageInput.value; // Get the private message from the input field
+  const recipient = privateMessageRecipient.value; // Get the recipient's username or ID
+  const channelId = channelDropdown.value; // Get the current channel ID
+  console.log(channelDropdown.value);
+  socket.emit('privateMessage', { to: recipient, message, channelId }); // Emit the 'privateMessage' event with the recipient, message, and channel ID
+  /* addChatMessage(`You (to ${recipient}): ${message}`); */ // Display the message in the sender's chat window
+  privateMessageRecipient.value = ''; // Clear the recipient input field
+  privateMessageInput.value = ''; // Clear the message input field
 }
+
 /* ------------------------------------------- */
 
 // EVENT LISTENERS for user interactions

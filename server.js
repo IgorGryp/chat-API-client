@@ -131,6 +131,61 @@ io.on('connection', (socket) => {
     });
   });
 
+  /* ---------------------------------------------------- */
+
+  // Handle sending private messages
+  socket.on('privateMessage', async ({ to, message, channelId }) => {
+    const timestamp = new Date().toLocaleTimeString(); // Get the current time as a timestamp
+    const composedMessage = `[${timestamp}] ${socket.username} (to ${to}): ${message}`; // Format the message with timestamp and sender's username
+    // Broadcast the message to all users in the specified channel
+    io.to(channelId).emit('send message', composedMessage); // Emit to all connected clients in the channel
+
+    // Send the private message to an API for logging or storage
+    await fetch(`http://localhost:3000/channel/${channelId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + socket.token,
+      },
+      body: JSON.stringify({
+        to: to,
+        message: message,
+        from: socket.username,
+        channelId: channelId,
+      }),
+    });
+  });
+
+  // Handle sending private messages
+  /*   socket.on('privateMessage', async ({ to, message }) => {
+    const timestamp = new Date().toLocaleTimeString(); // Get the current time as a timestamp
+    const composedMessage = `[${timestamp}] ${socket.username} (to ${to}): ${message}`; // Format the message with timestamp and sender's username
+
+    // Find the socket of the recipient
+    const recipientSocket = Array.from(io.sockets.sockets.values()).find((s) => s.username === to);
+
+    if (recipientSocket) {
+      recipientSocket.emit('send private message', composedMessage); // Send the formatted message to the recipient
+    } else {
+      console.log(`User ${to} not found.`);
+    }
+
+    // Optionally send the private message to an API for logging or storage
+    await fetch(`http://localhost:3000/privateMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + socket.token,
+      },
+      body: JSON.stringify({
+        to: to,
+        message: message,
+        from: socket.username,
+      }),
+    });
+  }); */
+
+  /* ---------------------------------------------------- */
   // Handle creating a new channel
   socket.on('create channel', async (channelName, channelDescription, channelId) => {
     // Här kan du implementera logiken för att skapa den nya kanalen med namn och beskrivning
